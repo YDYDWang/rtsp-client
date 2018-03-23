@@ -28,7 +28,7 @@ public class BytesCacheManager {
 		}
 		LinkedList<Bytes> list = map.get(address);
 		list.add(bytes);
-		return isTail(list, -1);
+		return isTail(list, 0);
 	}
 
 	public static InputStream get(String address) {
@@ -47,32 +47,26 @@ public class BytesCacheManager {
 		Iterator<Bytes> iterator = deque.descendingIterator();
 		while (iterator.hasNext()) {
 			Bytes bytes = iterator.next();
-			if (bytes.getLength() > 0) {
-				if (END[++index] == bytes.getBytes()[bytes.getLength() - 1]) {
-					if (bytes.getLength() > 1) {
-						if (END[++index] == bytes.getBytes()[bytes.getLength() - 2]) {
-							if (bytes.getLength() > 2) {
-								if (END[++index] == bytes.getBytes()[bytes.getLength() - 3]) {
-									if (bytes.getLength() > 3) {
-										if (END[++index] == bytes.getBytes()[bytes.getLength() - 4]) {
-											return Boolean.TRUE;
-										} else {
-											break;
-										}
-									}
-								} else {
-									break;
-								}
-							}
-						} else {
-							break;
-						}
-					}
-				} else {
+			Boolean isTail = isTail(bytes, index, 0);
+			if (isTail != null) {
+				if (Boolean.FALSE == isTail) {
 					break;
 				}
+				return Boolean.TRUE;
 			}
 		}
 		return Boolean.FALSE;
+	}
+
+	private static Boolean isTail(Bytes bytes, int index, int length) {
+		if (index == 4) {
+			return Boolean.TRUE;
+		} else if (bytes.getLength() > length) {
+			if (END[index] == bytes.getBytes()[bytes.getLength() - length - 1]) {
+				return isTail(bytes, ++index, ++length);
+			}
+			return Boolean.FALSE;
+		}
+		return null;
 	}
 }
